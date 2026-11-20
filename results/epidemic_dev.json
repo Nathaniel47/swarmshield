@@ -1,0 +1,150 @@
+{
+  "susceptibility": 0.5,
+  "seeds": 10,
+  "rounds": 6,
+  "episodes": 1140,
+  "cells": {
+    "prompt_infection/chain": {
+      "episodes": 190,
+      "infection_rate": 0.49736842105263157,
+      "time_to_peak": 3.5026737967914436,
+      "peak_infected": 2.057894736842105,
+      "spread_speed": 0.7649122807017544,
+      "task_success": 0.9105263157894737,
+      "mean_fraction_ever_infected": [
+        0.09035087719298246,
+        0.20614035087719298,
+        0.2912280701754386,
+        0.3780701754385965,
+        0.44298245614035087,
+        0.4973684210526316
+      ]
+    },
+    "prompt_infection/star": {
+      "episodes": 190,
+      "infection_rate": 0.5535087719298245,
+      "time_to_peak": 3.691891891891892,
+      "peak_infected": 2.331578947368421,
+      "spread_speed": 0.8231578947368421,
+      "task_success": 0.8526315789473684,
+      "mean_fraction_ever_infected": [
+        0.08245614035087719,
+        0.16140350877192983,
+        0.293859649122807,
+        0.41228070175438597,
+        0.4842105263157895,
+        0.5535087719298245
+      ]
+    },
+    "prompt_infection/mesh": {
+      "episodes": 190,
+      "infection_rate": 0.8824561403508772,
+      "time_to_peak": 3.978723404255319,
+      "peak_infected": 3.8842105263157896,
+      "spread_speed": 1.2355263157894736,
+      "task_success": 0.6052631578947368,
+      "mean_fraction_ever_infected": [
+        0.07982456140350877,
+        0.3219298245614035,
+        0.5307017543859649,
+        0.6877192982456141,
+        0.8078947368421052,
+        0.8824561403508772
+      ]
+    },
+    "memory_poisoning/chain": {
+      "episodes": 190,
+      "infection_rate": 0.8605263157894737,
+      "time_to_peak": 1.5736842105263158,
+      "peak_infected": 3.6789473684210527,
+      "spread_speed": 2.113771929824561,
+      "task_success": 0.8473684210526315,
+      "mean_fraction_ever_infected": [
+        0.4850877192982456,
+        0.7245614035087719,
+        0.8131578947368422,
+        0.8368421052631579,
+        0.8543859649122808,
+        0.8605263157894737
+      ]
+    },
+    "memory_poisoning/star": {
+      "episodes": 190,
+      "infection_rate": 0.8912280701754386,
+      "time_to_peak": 1.8631578947368421,
+      "peak_infected": 3.9210526315789473,
+      "spread_speed": 2.112017543859649,
+      "task_success": 0.8578947368421053,
+      "mean_fraction_ever_infected": [
+        0.49385964912280705,
+        0.7491228070175439,
+        0.8359649122807018,
+        0.880701754385965,
+        0.8894736842105263,
+        0.8912280701754386
+      ]
+    },
+    "memory_poisoning/mesh": {
+      "episodes": 190,
+      "infection_rate": 0.962280701754386,
+      "time_to_peak": 2.705263157894737,
+      "peak_infected": 4.378947368421053,
+      "spread_speed": 1.9387719298245614,
+      "task_success": 0.5631578947368421,
+      "mean_fraction_ever_infected": [
+        0.5140350877192982,
+        0.7429824561403509,
+        0.8640350877192983,
+        0.9324561403508772,
+        0.9508771929824561,
+        0.962280701754386
+      ]
+    }
+  },
+  "fits": {
+    "prompt_infection/chain": {
+      "beta": 0.2,
+      "gamma": 0.0,
+      "epsilon": 0.0,
+      "mse": 0.0019337898840668928
+    },
+    "prompt_infection/star": {
+      "beta": 0.3,
+      "gamma": 0.0,
+      "epsilon": 0.0,
+      "mse": 0.0018112252487945018
+    },
+    "prompt_infection/mesh": {
+      "beta": 0.2,
+      "gamma": 0.2,
+      "epsilon": 0.0,
+      "mse": 0.001985373063506718
+    },
+    "memory_poisoning/chain": {
+      "beta": 0.3,
+      "gamma": 0.2,
+      "epsilon": 0.6,
+      "mse": 0.0017674040730481161
+    },
+    "memory_poisoning/star": {
+      "beta": 0.5,
+      "gamma": 0.4,
+      "epsilon": 0.6,
+      "mse": 0.001466206268595463
+    },
+    "memory_poisoning/mesh": {
+      "beta": 0.2,
+      "gamma": 0.4,
+      "epsilon": 0.6,
+      "mse": 0.0014602384066892376
+    }
+  },
+  "cross_topology": {
+    "prompt_infection/chain": 0.0019337898840668928,
+    "prompt_infection/star": 0.006546836847235043,
+    "prompt_infection/mesh": 0.0025589232584384953,
+    "memory_poisoning/chain": 0.0017674040730481161,
+    "memory_poisoning/star": 0.003236198958653945,
+    "memory_poisoning/mesh": 0.005180529586026471
+  }
+}

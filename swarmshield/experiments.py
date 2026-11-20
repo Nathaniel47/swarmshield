@@ -42,3 +42,47 @@ def run_attack(
 
 def infection_rate(infected: dict[str, int]) -> float:
     return len(infected) / len(agent_ids())
+
+
+def load_tasks(path: Path = Path("data/tasks.jsonl")) -> list[dict]:
+    return [json.loads(line) for line in path.read_text("utf-8").splitlines() if line.strip()]
+
+
+def run_grid(
+    tasks: list[dict],
+    payloads: list[dict],
+    topologies: tuple[str, ...],
+    susceptibility: float,
+    seeds: int,
+    rounds: int,
+    attack_kwargs: dict | None = None,
+) -> list[dict]:
+    """Scripted-agent grid: every payload on every topology for `seeds` seeds. Payload i uses
+    task i mod len(tasks). One row per episode, with S/I/R curves and summary numbers."""
+    from swarmshield.epidemic.metrics import curves, summary
+    from swarmshield.run_episode import make_client
+
+    rows = []
+    for seed in range(seeds):
+        cfg = Config(rounds=rounds, seed=seed)
+        for i, payload in enumerate(payloads):
+            task = tasks[i % len(tasks)]
+            for topology in topologies:
+                llm = make_client("scripted", cfg, susceptibility)
+                attack = payload["attack"]
+                kw = (attack_kwargs or {}).get(attack, {})
+                run_id = f"{attack}-{topology}-{task['task_id']}-{payload['payload_id']}-s{seed}"
+                result, infected = run_attack(
+                    attack, task, payload, topology, llm, cfg, run_id, **kw
+                )
+                cur = curves(result.log.events, make_canary(cfg.seed, run_id), rounds)
+                rows.append(
+                    {
+                        "topology": topology, "attack": attack, "payload_id": payload["payload_id"],
+                        "source": payload["source"], "split": payload["split"],
+                        "task_id": task["task_id"], "seed": seed,
+                        "susceptibility": susceptibility, "success": result.success,
+                        "llm_calls": result.llm_calls, "curves": cur, **summary(cur),
+                    }
+                )  # fmt: skip
+    return rows
