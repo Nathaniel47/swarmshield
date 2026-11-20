@@ -80,3 +80,12 @@ All three are separate hooks, switched on by name (`DefenceSet`), so an experime
 - **Caveats**: these are scripted-agent numbers on the dev split. The strength of D1's fencing is an assumption, and the sanitiser's number allow-list suits this numeric task more than a general one.
 
 How to run and check: `python -m swarmshield.defences.analysis` (about 45 seconds, offline) writes `results/defences_dev.md`. `pytest tests/test_defences.py` checks each defence in isolation, that all 126 payloads are stripped by D2, that the third drafter is isolated, that clean runs succeed under every setting, and that all three together beat both attacks.
+
+## Step 5.4: Live graph dashboard
+
+- **What it shows** (`dashboard/`): the six agents as nodes on the chosen network shape. Green is susceptible, red is infected in that round, grey is quiet after an infection. A slider and a Play button step through the rounds, next to S/I/R curves, the final report, and the messages that carried the infection. A second tab runs the same attack under all five defence settings, and a third shows the saved dev-split result tables. Four preset buttons set up an example in one click.
+- **Why it is "live"**: the scripted agent runs an episode in a few milliseconds, so every change of setting re-runs the swarm and redraws the graph immediately, with no API key or waiting. The real model is not wired in: free-tier limits make a live run take minutes and cost the daily budget.
+- **Structure**: `dashboard/runner.py` runs an episode and returns plain data (states per round, curves, report); `dashboard/graph.py` turns that into Plotly figures; `dashboard/app.py` is only layout. Keeping the logic out of the app file is what lets tests cover it, and a Streamlit test runs the whole app headlessly and clicks the presets.
+- **Reading the picture honestly**: "Infected now" means the agent emitted the canary in that round, which is the same marker the evaluation uses. It does not prove the agent "understood" the attack, only that it obeyed planted text.
+
+How to run and check: `streamlit run dashboard/app.py`, then open http://localhost:8501. `pytest tests/test_dashboard.py` covers the state logic, the figures for all three topologies and the app itself.
