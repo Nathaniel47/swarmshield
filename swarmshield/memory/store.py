@@ -5,6 +5,7 @@ Write filters are the hook defences use (Step 5): each is called with the entry 
 stored and returns the entry (possibly rewritten) or None to block the write.
 """
 
+import re
 import sqlite3
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
@@ -53,6 +54,22 @@ class SharedMemory:
         return Entry(
             cur.lastrowid, entry.round, entry.author, entry.text, entry.provenance, entry.trusted
         )
+
+    def last_id(self) -> int:
+        return self.db.execute("SELECT COALESCE(MAX(id), 0) FROM memory").fetchone()[0]
+
+    def search(self, query: str, limit: int) -> list["Entry"]:
+        """The `limit` entries most relevant to `query` (shared words of 4+ letters), ties broken
+        by recency, returned oldest first. This is how an agent retrieves memory, so an entry
+        crafted to match the task keeps being retrieved however old it is."""
+        words = set(re.findall(r"[a-z0-9]{4,}", query.lower()))
+
+        def score(e: "Entry") -> int:
+            return len(words & set(re.findall(r"[a-z0-9]{4,}", e.text.lower())))
+
+        latest = {e.text: e for e in self.read()}  # repeated identical notes count once
+        ranked = sorted(latest.values(), key=lambda e: (score(e), e.id), reverse=True)
+        return sorted(ranked[:limit], key=lambda e: e.id)
 
     def read(self, limit: int | None = None) -> list[Entry]:
         """Entries oldest first; with `limit`, only the most recent ones."""

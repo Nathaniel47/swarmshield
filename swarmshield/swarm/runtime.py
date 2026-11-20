@@ -13,6 +13,7 @@ from pathlib import Path
 import networkx as nx
 
 from swarmshield.agents.base import Agent, AgentView
+from swarmshield.defences import DefenceSet, merge_reports
 from swarmshield.llm.client import LLMClient
 from swarmshield.memory.store import Entry, SharedMemory
 from swarmshield.scoring import task_success
@@ -93,6 +94,7 @@ def run_episode(
     router: Router | None = None,
     canary: str | None = None,
     memory_seeds: list[dict] | None = None,
+    defences: DefenceSet | None = None,
 ) -> EpisodeResult:
     memory = memory or SharedMemory()
     router = router or Router(graph)
@@ -101,7 +103,11 @@ def run_episode(
     agents = {a: Agent(a, role_of(a), llm) for a in ids}
     docs = _assign_documents(task, [a for a in ids if role_of(a) == "researcher"])
     calls0, est0, used0, hits0 = llm.logical_calls, llm.est_tokens, llm.tokens_used, llm.cache_hits
-    lead_writer = next(a for a in ids if role_of(a) == "writer")
+    defences = defences or DefenceSet()
+    defences.attach(memory, router, docs)
+    writers = [a for a in ids if role_of(a) == "writer"]
+    lead_writer = writers[0]
+    drafts: dict[str, str] = {}
     report = ""
 
     for seed_entry in memory_seeds or []:
@@ -114,7 +120,14 @@ def run_episode(
         for agent_id in ids:
             my_docs = docs.get(agent_id, [])
             inbox = router.collect(agent_id)
-            view = AgentView(rnd, task["question"], my_docs, memory.read(MEMORY_WINDOW), inbox)
+            view = AgentView(
+                rnd,
+                task["question"],
+                my_docs,
+                memory.search(task["question"], MEMORY_WINDOW),
+                inbox,
+                defences.fence,
+            )
             action = agents[agent_id].act(view, repeat)
             log.add(rnd, "llm_call", agent_id, prompt=action.prompt, reply=action.raw)
 
@@ -134,10 +147,26 @@ def run_episode(
                     log.add(rnd, "message", agent_id, to=m.recipient, text=m.text)
                 for m in dropped:
                     log.add(rnd, "message_dropped", agent_id, to=m.recipient, text=m.text)
-            if agent_id == lead_writer and rnd == rounds:
-                report = action.report or action.note
-                log.add(rnd, "report", agent_id, text=report)
+            if agent_id in writers and rnd == rounds:
+                drafts[agent_id] = action.report or action.note
+                if agent_id == lead_writer:
+                    report = drafts[agent_id]
+                    log.add(rnd, "report", agent_id, text=report)
+                else:
+                    log.add(rnd, "vote", agent_id, text=drafts[agent_id])
         router.end_round()
+
+    if defences.majority:
+        # A third drafter that reads only shared memory, so messages cannot reach it.
+        third = Agent("writer-3", "writer", llm)
+        window = memory.search(task["question"], MEMORY_WINDOW)
+        action = third.act(
+            AgentView(rounds, task["question"], [], window, [], defences.fence), repeat
+        )
+        log.add(rounds, "llm_call", "writer-3", prompt=action.prompt, reply=action.raw)
+        log.add(rounds, "vote", "writer-3", text=action.report or action.note)
+        report = merge_reports([drafts[w] for w in writers] + [action.report or action.note])
+        log.add(rounds, "report", lead_writer, text=report, merged=True)
 
     return EpisodeResult(
         run_id=run_id,

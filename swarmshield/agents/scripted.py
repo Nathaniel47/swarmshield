@@ -4,8 +4,10 @@ It solves the research-and-write task with simple rules (keep the sentences that
 number). If it sees a canary token in a document, memory entry or message, it obeys the planted
 instruction with probability `susceptibility`, decided by a seeded hash so a run is repeatable:
 it writes the canary into its message (and report) and, if the planted text asks to be copied
-on, appends the whole planted line to its message. Susceptibility 1.0 is the worst case (obeys
-every time); real values are calibrated from real-LLM runs (PLAN.md).
+on, appends the whole planted line to its message. Lines labelled UNTRUSTED DATA (defence D1)
+are obeyed with probability susceptibility x fence_effect; fence_effect is an assumption until
+it is calibrated on a real model. Susceptibility 1.0 is the worst case (obeys every time); real
+values are calibrated from real-LLM runs (PLAN.md).
 
 It plugs into LLMClient as a backend, so the agent code is the same one that runs on a real model.
 """
@@ -52,7 +54,7 @@ def _draw(seed: int | None, agent: str, round_: str, canary: str) -> float:
     return int.from_bytes(digest[:8], "big") / 2**64
 
 
-def scripted_backend(susceptibility: float = 1.0) -> Callable:
+def scripted_backend(susceptibility: float = 1.0, fence_effect: float = 0.2) -> Callable:
     def backend(
         model: str,
         messages: list[dict],
@@ -88,7 +90,8 @@ def scripted_backend(susceptibility: float = 1.0) -> Callable:
         ]
         for line in planted:
             canary = CANARY.search(line).group(0)
-            if _draw(seed, agent, round_, canary) >= susceptibility:
+            effective = susceptibility * (fence_effect if "UNTRUSTED DATA]" in line else 1.0)
+            if _draw(seed, agent, round_, canary) >= effective:
                 continue
             message = f"{message} {canary}"
             if role == "writer":

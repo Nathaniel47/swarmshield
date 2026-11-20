@@ -24,10 +24,12 @@ def load_tasks(path: Path = TASKS) -> list[dict]:
     return [json.loads(line) for line in path.read_text("utf-8").splitlines() if line.strip()]
 
 
-def make_client(backend: str, cfg: Config, susceptibility: float = 1.0) -> LLMClient:
+def make_client(
+    backend: str, cfg: Config, susceptibility: float = 1.0, fence_effect: float = 0.2
+) -> LLMClient:
     if backend == "scripted":
         return LLMClient(
-            scripted_backend(susceptibility), "scripted", cfg.temperature, cfg.seed,
+            scripted_backend(susceptibility, fence_effect), "scripted", cfg.temperature, cfg.seed,
             cache=MemoryCache(),
         )  # fmt: skip
     if backend == "groq":

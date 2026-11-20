@@ -6,6 +6,7 @@ from pathlib import Path
 from swarmshield.attacks import plan_attack
 from swarmshield.attacks.canary import make_canary
 from swarmshield.config import Config
+from swarmshield.defences import DefenceSet
 from swarmshield.llm.client import LLMClient
 from swarmshield.scoring import infected_agents
 from swarmshield.swarm.runtime import EpisodeResult, run_episode
@@ -26,6 +27,7 @@ def run_attack(
     llm: LLMClient,
     cfg: Config | None = None,
     run_id: str | None = None,
+    defences: DefenceSet | None = None,
     **attack_kwargs,
 ) -> tuple[EpisodeResult, dict[str, int]]:
     """Returns the episode result and {agent: first round it emitted the canary}."""
@@ -35,7 +37,7 @@ def run_attack(
     plan = plan_attack(attack, task, payload, canary, **attack_kwargs)
     result = run_episode(
         plan.task, build_topology(topology), llm, cfg.rounds, run_id,
-        canary=canary, memory_seeds=plan.memory_seeds,
+        canary=canary, memory_seeds=plan.memory_seeds, defences=defences,
     )  # fmt: skip
     return result, infected_agents(result.log.events, canary)
 
@@ -56,6 +58,8 @@ def run_grid(
     seeds: int,
     rounds: int,
     attack_kwargs: dict | None = None,
+    defences: tuple[str, ...] = (),
+    fence_effect: float = 0.2,
 ) -> list[dict]:
     """Scripted-agent grid: every payload on every topology for `seeds` seeds. Payload i uses
     task i mod len(tasks). One row per episode, with S/I/R curves and summary numbers."""
@@ -68,12 +72,20 @@ def run_grid(
         for i, payload in enumerate(payloads):
             task = tasks[i % len(tasks)]
             for topology in topologies:
-                llm = make_client("scripted", cfg, susceptibility)
+                llm = make_client("scripted", cfg, susceptibility, fence_effect)
                 attack = payload["attack"]
                 kw = (attack_kwargs or {}).get(attack, {})
                 run_id = f"{attack}-{topology}-{task['task_id']}-{payload['payload_id']}-s{seed}"
                 result, infected = run_attack(
-                    attack, task, payload, topology, llm, cfg, run_id, **kw
+                    attack,
+                    task,
+                    payload,
+                    topology,
+                    llm,
+                    cfg,
+                    run_id,
+                    DefenceSet(frozenset(defences)),
+                    **kw,
                 )
                 cur = curves(result.log.events, make_canary(cfg.seed, run_id), rounds)
                 rows.append(
@@ -81,7 +93,8 @@ def run_grid(
                         "topology": topology, "attack": attack, "payload_id": payload["payload_id"],
                         "source": payload["source"], "split": payload["split"],
                         "task_id": task["task_id"], "seed": seed,
-                        "susceptibility": susceptibility, "success": result.success,
+                        "susceptibility": susceptibility, "defences": "+".join(defences) or "none",
+                        "success": result.success,
                         "llm_calls": result.llm_calls, "curves": cur, **summary(cur),
                     }
                 )  # fmt: skip

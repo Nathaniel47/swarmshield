@@ -16,7 +16,9 @@ STYLES = ("direct", "forged")
 def plan_poisoning(task: dict, payload: dict, canary: str, style: str = "forged") -> AttackPlan:
     if style not in STYLES:
         raise ValueError(f"unknown poisoning style {style!r}; choose from {STYLES}")
-    text = fill(payload["template"], canary)
+    # The attacker knows the task, so the note opens with its question: memory retrieval then
+    # ranks the note as relevant on every run (the trigger idea from AgentPoison).
+    text = f"Re: {task['question']} " + fill(payload["template"], canary)
     if style == "direct":
         seed = {"text": text, "author": "external", "provenance": (), "trusted": True}
     else:
