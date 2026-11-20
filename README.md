@@ -38,4 +38,12 @@ Lint and format: `ruff check .` and `ruff format .`. Optional commit hooks (gitl
 
 ## Data and licences
 
-Filled in during Step 3 (InjecAgent, AgentDojo and the synthetic tasks).
+Only the attacker's wording from public sets is reused, as cover text; every payload's checkable action is our own (write a canary string), and real-looking emails and URLs are replaced with `.test` addresses. Versions are pinned by commit and raw file hashes are in `data/manifest.json`. Rebuild everything with `python -m swarmshield.build_dataset` (downloads the raw files into the git-ignored `data/raw/`); the report is [results/data_report.md](results/data_report.md).
+
+| Source | Licence | Pinned version | What is used |
+|---|---|---|---|
+| [InjecAgent](https://github.com/uiuc-kang-lab/InjecAgent) (attacker cases) | MIT | `f19c9f2c` | 30 of 62 attacker instructions, reworded into 60 payloads |
+| [AgentDojo](https://github.com/ethz-spylab/agentdojo) (v1 injection task goals) | MIT | `089ed468` | 27 attacker goals, read as text only, reworded into 54 payloads |
+| Self-written | this repo | n/a | 12 payloads and 60 synthetic research-and-write tasks |
+
+The licences were checked on the two GitHub repositories (both report MIT).
