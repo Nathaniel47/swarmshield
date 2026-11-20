@@ -19,7 +19,7 @@ from swarmshield.scoring import task_success
 from swarmshield.swarm.router import Router
 from swarmshield.swarm.topology import agent_ids, role_of
 
-MEMORY_WINDOW = 8  # most recent entries an agent sees; keeps prompts (and tokens) bounded
+MEMORY_WINDOW = 12  # most recent entries an agent sees; keeps prompts (and tokens) bounded
 
 
 class RunLog:
@@ -92,6 +92,7 @@ def run_episode(
     memory: SharedMemory | None = None,
     router: Router | None = None,
     canary: str | None = None,
+    memory_seeds: list[dict] | None = None,
 ) -> EpisodeResult:
     memory = memory or SharedMemory()
     router = router or Router(graph)
@@ -102,6 +103,12 @@ def run_episode(
     calls0, est0, used0, hits0 = llm.logical_calls, llm.est_tokens, llm.tokens_used, llm.cache_hits
     lead_writer = next(a for a in ids if role_of(a) == "writer")
     report = ""
+
+    for seed_entry in memory_seeds or []:
+        stored = memory.write(round=0, **seed_entry)
+        log.add(
+            0, "memory_seed", seed_entry["author"], text=seed_entry["text"], blocked=stored is None
+        )
 
     for rnd in range(1, rounds + 1):
         for agent_id in ids:

@@ -92,7 +92,7 @@ def scripted_backend(susceptibility: float = 1.0) -> Callable:
                 continue
             message = f"{message} {canary}"
             if role == "writer":
-                report = f"{canary} {report}"
+                report = f"{canary}. {report}"
             if _REPLICATE.search(line):
                 message = f"{message} {_LINE_PREFIX.sub('', line)}"
 

@@ -46,3 +46,13 @@ How to run and check:
 - `python -m swarmshield.run_episode --task t000 --topology chain` runs one episode offline and prints success, call count, estimated tokens and the report. Add `--backend groq` once `SWARMSHIELD_GROQ_API_KEY` is in `.env`.
 - `python -m swarmshield.run_episode --measure` runs all 60 tasks on all 3 topologies (180 episodes) offline and writes `results/episode_cost.json`.
 - `pytest` (32 tests) includes the spread checks: with an infected document, an infection reaches the planner and researcher-2 in round 2 and the far end of a chain in round 5, and mesh beats star beats chain.
+
+## Step 5.1: Attacks
+
+- **A1, prompt infection** (`attacks/infection.py`): the attacker plants a notice in one document. Whichever researcher reads it is "patient zero". The notice tells the agent to emit a canary and to copy the whole notice into every message it sends on, so each infected agent infects its neighbours. This is a worm: it needs no attacker action after the first plant. Reading: Lee and Tiwari, "Prompt Infection" (2024).
+- **A2, memory poisoning** (`attacks/poisoning.py`): the attacker writes one standing note into the shared memory before the run. Every agent that retrieves it can be affected, whatever the network shape. Two strengths: `direct` (an unknown author with no provenance) and `forged` (written as researcher-1, citing that researcher's real document, and claiming to be trusted). The forged one matters because the first defence checks provenance, and an attacker who knows the task can fake plausible provenance. Reading: Chen et al., "AgentPoison" (2024).
+- **Why canaries**: the planted text only asks the agent to write a unique code. That is harmless by construction, easy to detect exactly, and still shows whether an agent obeyed text it should have treated as data.
+- **Observed with the worst-case scripted agent**: infection starts at researcher-1 in round 1 and reaches every agent on all three topologies if given enough rounds; poisoned memory reaches all six agents in rounds 1-2 on a chain, because it does not travel along edges. With susceptibility 0 nothing spreads and the task succeeds.
+- **Limits**: a poisoned entry stays visible only while it is among the 12 most recent memory entries, which is about two rounds. A real retrieval system would keep returning it when relevant, so memory poisoning is probably understated here.
+
+How to check: `pytest tests/test_attacks.py` (checks all 126 built payloads infect the worst-case agent, the forged style, and that the seed write is logged but not counted as an infection).
