@@ -66,7 +66,7 @@ flowchart LR
 
 ## 2. Call budget
 
-Estimates, to be replaced by measurements in Step 4. An episode is one full run of the swarm on one task (6 agents, about 2 rounds, so about 12 LLM calls at about 600 tokens, roughly 7K tokens). With a free limit of about 200K tokens/day that is about **25-30 real-LLM episodes per day**.
+**Measured in Step 4** (`python -m swarmshield.run_episode --measure`, scripted agent, 4 rounds): an episode (6 agents acting each round) is **24 LLM calls and about 8.8K tokens**, counting prompt plus the short scripted reply. Real replies are longer, so call it **9-12K tokens**, about **15-20 real-LLM episodes per day** at a 200K/day limit (not yet checked with a real key). Spread needs one round per hop, so a chain needs 5 rounds to reach the far end; episodes with 4 rounds (the default) cover most of it and 6 rounds cost 50% more. The episode counts below were planned for 12 calls and are halved or cut accordingly in Step 6.
 
 | Run | Episodes | Notes |
 |---|---|---|

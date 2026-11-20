@@ -1,0 +1,8 @@
+{
+  "rounds": 4,
+  "episodes": 180,
+  "task_success_rate": 1.0,
+  "llm_calls_per_episode": 24,
+  "est_tokens_per_episode": 8813.388888888889,
+  "note": "tokens are characters/4 of prompt plus the scripted reply; real replies are longer, so treat this as a lower bound on real-LLM cost"
+}

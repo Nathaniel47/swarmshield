@@ -1,0 +1,9 @@
+{
+  "backend": "scripted",
+  "model": "scripted",
+  "temperature": 0.0,
+  "seed": 42,
+  "rounds": 4,
+  "topology": "chain",
+  "git_commit": "b8ef83e986481a7846b6a24ac57d5469bece1d7b"
+}
