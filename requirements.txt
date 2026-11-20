@@ -1,7 +1,4 @@
 networkx>=3.2
 numpy>=1.26
-pydantic>=2.6
 streamlit>=1.35
 plotly>=5.20
-groq>=0.9
-google-genai>=1.0

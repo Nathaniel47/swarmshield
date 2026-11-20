@@ -12,7 +12,8 @@ from swarmshield.scoring import infected_agents
 from swarmshield.swarm.runtime import EpisodeResult, run_episode
 from swarmshield.swarm.topology import agent_ids, build_topology
 
-PAYLOADS = Path("data/payloads.jsonl")
+DATA = Path(__file__).resolve().parent.parent / "data"
+PAYLOADS = DATA / "payloads.jsonl"
 
 
 def load_payloads(path: Path = PAYLOADS) -> list[dict]:
@@ -46,7 +47,7 @@ def infection_rate(infected: dict[str, int]) -> float:
     return len(infected) / len(agent_ids())
 
 
-def load_tasks(path: Path = Path("data/tasks.jsonl")) -> list[dict]:
+def load_tasks(path: Path = DATA / "tasks.jsonl") -> list[dict]:
     return [json.loads(line) for line in path.read_text("utf-8").splitlines() if line.strip()]
 
 

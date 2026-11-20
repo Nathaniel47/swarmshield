@@ -18,3 +18,7 @@ select = ["E", "F", "I", "B", "UP"]
 testpaths = ["tests"]
 pythonpath = ["."]
 addopts = "-q"
+
+[tool.ruff.lint.per-file-ignores]
+# The app adds the repository root to sys.path before importing the project packages.
+"dashboard/app.py" = ["E402"]

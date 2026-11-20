@@ -30,3 +30,4 @@ build/
 results/runs/
 .claude/
 results/eval_quick.json
+results/*.log

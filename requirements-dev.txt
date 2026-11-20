@@ -1,5 +1,7 @@
-# Dev and CI dependencies. CI installs this file plus requirements.txt.
+# Dev and CI dependencies: the demo, the LLM backends, charts and tooling.
 -r requirements.txt
+-r requirements-llm.txt
+matplotlib>=3.8
 pytest>=8.0
 ruff>=0.5
 pre-commit>=3.7

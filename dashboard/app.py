@@ -5,9 +5,15 @@
 Runs the offline scripted agent (instant, no API key). Everything shown is synthetic.
 """
 
+import sys
 from pathlib import Path
 
 import streamlit as st
+
+# `streamlit run dashboard/app.py` puts only dashboard/ on the path; the packages live above it.
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from dashboard.graph import STATE_COLOURS, STATE_NAMES, curves_figure, graph_figure
 from dashboard.runner import ATTACK_LABELS, simulate_run
@@ -92,7 +98,8 @@ with st.sidebar:
         task_id = st.selectbox("Task", [t["task_id"] for t in TASKS])
 
 run_args = (topology, attack, defences, susceptibility, fence_effect, rounds, int(seed))
-run = st.cache_data(simulate_run, show_spinner=False)(*run_args, payload_id, task_id, style)
+cached_run = st.cache_data(simulate_run, show_spinner=False)
+run = cached_run(*run_args, payload_id, task_id, style)
 
 tab_live, tab_compare, tab_results = st.tabs(["Live graph", "Compare defences", "Results"])
 
@@ -102,7 +109,7 @@ with tab_live:
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Agents ever infected", f"{n_inf} of 6")
     c2.metric("Time to peak", f"round {s['time_to_peak']}" if s["time_to_peak"] else "none")
-    c3.metric("Final report", "Clean" if run["success"] else "Compromised")
+    c3.metric("Final report", "OK" if run["success"] else "Hijacked")
     c4.metric("LLM calls", run["llm_calls"])
     left, right = st.columns([3, 2])
     with left:
@@ -128,7 +135,7 @@ with tab_compare:
     st.write("The same attack, topology and settings under each defence setting.")
     rows = []
     for name, names in CONFIGS.items():
-        r = simulate_run(
+        r = cached_run(
             topology, attack, tuple(names), susceptibility, fence_effect, rounds, int(seed),
             payload_id, task_id, style,
         )  # fmt: skip
@@ -145,9 +152,17 @@ with tab_compare:
     st.caption("One run per row. The Results tab has averages over many runs.")
 
 with tab_results:
-    for name in ("defences_dev.md", "epidemic_dev.md"):
-        path = Path("results") / name
+    st.write(
+        "Held-out test results for the scripted agent (the model is a rule-based stand-in with a "
+        "set obedience rate, so read the limitations below before quoting a number)."
+    )
+    for chart in ("chart_defences.png", "chart_spread.png", "chart_d1_sensitivity.png"):
+        if (ROOT / "results" / chart).exists():
+            st.image(str(ROOT / "results" / chart))
+    for name in ("results_table.md", "limitations.md"):
+        path = ROOT / "results" / name
         if path.exists():
-            st.markdown(path.read_text(encoding="utf-8"))
+            with st.expander(name, expanded=name == "results_table.md"):
+                st.markdown(path.read_text(encoding="utf-8"))
         else:
             st.info(f"{name} has not been generated yet.")

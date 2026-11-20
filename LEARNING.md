@@ -109,3 +109,14 @@ How to run and check: `streamlit run dashboard/app.py`, then open http://localho
 - **The honest headline**: the three defences are complementary, each covering a different route (documents, messages, shared memory), and none is enough alone. But these are results for a scripted agent with an assumed obedience, and D1 leans on a made-up fence effect (see `chart_d1_sensitivity.png`). `results/limitations.md` lists what would change that, mainly a real-model calibration run once an API key exists.
 
 How to run and check: `python -m swarmshield.evaluation` (about 10 minutes, offline) rewrites everything in `results/`; `--charts-only` redraws the table and charts from `results/eval_test.json`; `--quick` checks the plumbing in seconds. `pytest tests/test_evaluation.py` covers the interval maths, the baseline, the static payload checks and the table and chart generation.
+
+## Step 7: Demo and deploy
+
+- **Where it goes and why**: Streamlit Community Cloud. The app is already Streamlit, so it deploys straight from the GitHub repo with no container, it is free, and visitors need no account. The Dockerfile stays as the alternative for Hugging Face Spaces or Render. The one step that needs your own login is creating the app on share.streamlit.io; everything else is in `DEPLOY.md`.
+- **No keys in the public demo**: the demo runs the scripted agent, so there is nothing to leak and no daily token limit to protect. A live-model mode would need host-side secrets, a per-visitor rate limit and a daily cap; `DEPLOY.md` says so rather than shipping an unguarded one.
+- **Speed**: dependencies were split so the deployed app installs only four libraries (`requirements.txt`); the Groq and Gemini SDKs moved to `requirements-llm.txt`. Run results are cached per setting, so changing a slider re-runs one episode of about 20 ms. Measured in the locked-down Docker image: full page in about 5 seconds from a cold container.
+- **One-click examples**: four preset buttons set the network shape, attack, defences and obedience at once. The first screen already shows a finished run, so a visitor sees a result without touching anything.
+- **Two small fixes found while testing the container**: the app now adds the repository root to the import path (the plain `streamlit run` command does not, only `python -m streamlit` does) and the CI image build was already checking the health endpoint. Without these, the deployed app would have failed on its first import.
+- **Results tab**: shows the three evaluation charts, the results table and the limitations, so the public page carries the caveats along with the numbers.
+
+How to check: `docker build` and `docker run` as in `DEPLOY.md`, then open http://localhost:8501; `pytest tests/test_dashboard.py` runs the app headlessly.
