@@ -1,0 +1,13 @@
+services:
+  dashboard:
+    build: .
+    ports: ["8501:8501"]
+    env_file:
+      - path: .env
+        required: false
+    mem_limit: 2g
+    pids_limit: 256
+    read_only: true
+    tmpfs: ["/tmp"]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]

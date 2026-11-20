@@ -1,0 +1,25 @@
+name: tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: pytest
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t swarmshield .
+      - name: Run it locked down and check the health endpoint
+        run: |
+          docker run -d --name ss -p 8501:8501 --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges:true --memory 2g swarmshield
+          for i in $(seq 1 30); do curl -fs http://localhost:8501/_stcore/health && exit 0; sleep 2; done
+          docker logs ss; exit 1
