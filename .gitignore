@@ -29,3 +29,4 @@ Thumbs.db
 build/
 results/runs/
 .claude/
+results/eval_quick.json

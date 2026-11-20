@@ -89,3 +89,23 @@ How to run and check: `python -m swarmshield.defences.analysis` (about 45 second
 - **Reading the picture honestly**: "Infected now" means the agent emitted the canary in that round, which is the same marker the evaluation uses. It does not prove the agent "understood" the attack, only that it obeyed planted text.
 
 How to run and check: `streamlit run dashboard/app.py`, then open http://localhost:8501. `pytest tests/test_dashboard.py` covers the state logic, the figures for all three topologies and the app itself.
+
+## Step 6: Evaluation
+
+- **What is measured, and why** (`swarmshield/evaluation.py`):
+  - *Attack success rate (ASR)*: the share of attacked runs whose final report contains the canary. It is the output-level failure a user would see. Spread (the share of agents that ever emitted the canary) is reported next to it because a defence can contain a worm without cleaning the report, or the reverse.
+  - *Clean report*: the report has every fact and no canary. It stops a defence from "winning" by wrecking the answer.
+  - *Benign success*: the same fact check on un-attacked runs, so a defence that blocks everything is caught.
+  - *Cost*: LLM calls per episode (D3 adds one).
+- **Baseline**: a naive keyword blocklist (`defences/baseline.py`) that drops messages and memory writes containing classic phrases like "ignore all". It is the first thing most people would try and it catches 3 of 126 payloads, so it is the bar the real defences have to clear. Two more baselines are the "no defence" row and three agents that never read the documents (empty report, generic report, another task's numbers), which all score 0%, proving the fact check cannot be passed without reading.
+- **Held-out split, fixed seeds, variance**: only the 88 test payloads and 42 test tasks are used, with seeds 0-4. Runs that share a payload are not independent, so the 95% intervals come from a bootstrap that resamples payloads rather than runs. The standard deviation across seeds is reported too (largest: 4.0 points). Reading: any short introduction to the bootstrap, e.g. the Wikipedia article on bootstrapping, section on cluster resampling.
+- **Results** (`results/results_table.md`, `chart_defences.png`, `chart_spread.png`, `chart_d1_sensitivity.png`):
+  - With no defence an agent that obeys half the time yields a compromised report in 23% of worm runs and 50% of poisoning runs; at full obedience, 100%.
+  - The keyword blocklist changes almost nothing (23% to 22%).
+  - Against the worm, D2 is strongest alone at 4% (D1 0%, D3 8%) at obedience 0.5, and with obedience 1.0, D1 gets 3%, D2 14% and D3 does nothing. The three together reach 0% in both.
+  - Against poisoned memory, D2 and D3 do little (50% and 47%) because the poison arrives through shared memory, not messages. D1 stops the naive author-unknown version completely and cuts the forged version to 10%. All three: 2% (obedience 0.5) and 9% (obedience 1.0).
+  - Benign success is 100% in every setting, with D3 costing one extra call per episode.
+  - The worm spreads about equally on chain and star (54% and 57% of agents) and much wider on a mesh (91%). Poisoning reaches about 99% on every shape. A SIR model fitted on the chain predicts the star curve with error 0.0014 and the mesh curve with 0.0184, so structure explains the star but the mesh is a worse fit.
+- **The honest headline**: the three defences are complementary, each covering a different route (documents, messages, shared memory), and none is enough alone. But these are results for a scripted agent with an assumed obedience, and D1 leans on a made-up fence effect (see `chart_d1_sensitivity.png`). `results/limitations.md` lists what would change that, mainly a real-model calibration run once an API key exists.
+
+How to run and check: `python -m swarmshield.evaluation` (about 10 minutes, offline) rewrites everything in `results/`; `--charts-only` redraws the table and charts from `results/eval_test.json`; `--quick` checks the plumbing in seconds. `pytest tests/test_evaluation.py` covers the interval maths, the baseline, the static payload checks and the table and chart generation.

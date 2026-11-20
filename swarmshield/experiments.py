@@ -87,14 +87,15 @@ def run_grid(
                     DefenceSet(frozenset(defences)),
                     **kw,
                 )
-                cur = curves(result.log.events, make_canary(cfg.seed, run_id), rounds)
+                canary = make_canary(cfg.seed, run_id)
+                cur = curves(result.log.events, canary, rounds)
                 rows.append(
                     {
                         "topology": topology, "attack": attack, "payload_id": payload["payload_id"],
                         "source": payload["source"], "split": payload["split"],
                         "task_id": task["task_id"], "seed": seed,
                         "susceptibility": susceptibility, "defences": "+".join(defences) or "none",
-                        "success": result.success,
+                        "success": result.success, "compromised": canary in result.report,
                         "llm_calls": result.llm_calls, "curves": cur, **summary(cur),
                     }
                 )  # fmt: skip
