@@ -120,3 +120,12 @@ How to run and check: `python -m swarmshield.evaluation` (about 10 minutes, offl
 - **Results tab**: shows the three evaluation charts, the results table and the limitations, so the public page carries the caveats along with the numbers.
 
 How to check: `docker build` and `docker run` as in `DEPLOY.md`, then open http://localhost:8501; `pytest tests/test_dashboard.py` runs the app headlessly.
+
+## Step 8: README and write-up
+
+- **README** is written for a reader who has 60 seconds: one-line purpose, a warning box that the numbers come from a scripted stand-in rather than a real model, the architecture diagram, one results table with intervals, how to run and reproduce, licences, limitations and future work. The demo link and GIF are placeholders until the app is deployed.
+- **PORTFOLIO.md** holds the 118-word card for a website and one sentence to paste into an email to a professor. It names the research areas (memory poisoning, prompt infection, safety of agent teams) without claiming results the project did not produce.
+- **docs/WRITEUP.md** is a short research-style report: problem, method, results, limitations, lessons learned. The lessons are the ones that cost time: the memory window that hid the poison, the silent defence bug that made a table row identical to the baseline, and why every headline number sits next to the assumption behind it.
+- **Honesty rule used throughout**: every claim in these documents is taken from `results/results_table.md` or `results/limitations.md`; if a number is not in those files it is not in the README.
+
+How to check: open README.md and compare each number with `results/results_table.md`; `pytest` and `ruff check .` pass.
