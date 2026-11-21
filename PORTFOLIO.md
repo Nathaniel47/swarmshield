@@ -6,7 +6,7 @@ What happens when one AI agent in a team reads a poisoned document? SwarmShield 
 
 **Stack:** Python, NetworkX, NumPy, Streamlit, Plotly, SQLite, Groq/Gemini free APIs, Docker, GitHub Actions.
 
-**Links:** repo https://github.com/Nathaniel47/swarmshield, demo link to be added after deployment (see DEPLOY.md).
+**Links:** repo https://github.com/Nathaniel47/swarmshield, live demo https://swarmshield.streamlit.app.
 
 ## One sentence for emailing professors
 

@@ -4,6 +4,8 @@ The demo is the Streamlit dashboard in `dashboard/app.py`. It runs the offline s
 
 ## Recommended: Streamlit Community Cloud (free)
 
+Deployed at https://swarmshield.streamlit.app (repository `Nathaniel47/swarmshield`, branch `main`, file `dashboard/app.py`, Python 3.11, no secrets). The steps below are how to redo it.
+
 Why: the app is Streamlit, so it deploys straight from the GitHub repo with no Docker, and the free tier is enough for a static, key-free demo. The first visit after an idle period takes a few seconds longer while the app wakes up.
 
 Only step 1 needs your own login.

@@ -2,7 +2,7 @@
 
 A simulation testbed that measures how a malicious instruction, or a poisoned memory entry, spreads between cooperating LLM agents, modelled like an epidemic on a network, and how well three defences stop it. Everything runs on a laptop with synthetic data; attacks only ever target the simulated swarm in this repo.
 
-**Demo:** not deployed yet. Follow [DEPLOY.md](DEPLOY.md) (about five minutes on Streamlit Community Cloud, no keys needed), then put the link here.
+**Demo:** https://swarmshield.streamlit.app (free tier: after an idle spell the first visit takes a few seconds longer while the app wakes up). Click an example on the left and watch the infection spread. Deployment steps: [DEPLOY.md](DEPLOY.md).
 
 <!-- GIF placeholder: docs/demo.gif, a recording of the "Worm on a mesh, no defence" example followed by "all defences". -->
 
