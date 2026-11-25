@@ -148,3 +148,12 @@ How to run: put `SWARMSHIELD_GROQ_API_KEY` in `.env`, then `python -m swarmshiel
 - **Reading a metric against real output**: every episode first scored as a task failure because the model writes `1,419` and the scorer looked for `1419`. The scripted agent copies text exactly, so no offline test could show this. Check a new metric against real replies before trusting it.
 
 How to run: `python -m swarmshield.real_episodes --backend groq` (replies are cached, so a rerun costs nothing).
+
+## Forwarding whole replies (partial)
+
+- **What changed**: `--relay whole` sends each agent's entire reply to its neighbours. It is off by default, so earlier results are unaffected.
+- **Result so far**: 3 of 6 episodes (one payload) before the daily token budget stopped the run. On the chain the code reached researcher-2; on the star and mesh it stayed with researcher-1. 2 of 25 exposed turns by other agents repeated it. All three tasks succeeded and no report contained the code.
+- **What it teaches**: I had guessed the parser was what stopped the worm. It was only part of it. The same notice was obeyed in 15 of 19 single turns when read from a document, but rarely when another agent passed it on. **Obedience depends on the route the text arrives by**, so one "susceptibility" number for the simulated agent is too simple. Writing down the guess and then testing it is what exposed this.
+- **Limits**: one payload, one model, temperature 0, and the 25 turns are not independent.
+
+To finish: after the daily limit resets, run `python -m swarmshield.real_episodes --backend groq --relay whole` again. Saved replies are reused, so only the missing calls cost tokens.

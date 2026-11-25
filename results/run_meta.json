@@ -5,7 +5,7 @@
   "seed": 42,
   "rounds": 4,
   "topology": "chain",
-  "git_commit": "0304c51758d9ee2835b8d07b1aa67fb54f54c2e5",
+  "git_commit": "39311900266df78569ea242dee8e2482f6d5bb76",
   "calibration": {
     "backend": "groq",
     "model": "openai/gpt-oss-20b",
@@ -25,5 +25,16 @@
     "new_calls": 127,
     "cache_hits": 17,
     "tokens_used": 92319
+  },
+  "real_episodes_whole_reply": {
+    "backend": "groq",
+    "model": "openai/gpt-oss-20b",
+    "temperature": 0.0,
+    "seed": 42,
+    "rounds": 4,
+    "relay": "whole",
+    "new_calls": 69,
+    "cache_hits": 24,
+    "tokens_used": 60493
   }
 }

@@ -29,6 +29,7 @@ def run_attack(
     cfg: Config | None = None,
     run_id: str | None = None,
     defences: DefenceSet | None = None,
+    relay_whole_reply: bool = False,
     **attack_kwargs,
 ) -> tuple[EpisodeResult, dict[str, int]]:
     """Returns the episode result and {agent: first round it emitted the canary}."""
@@ -39,6 +40,7 @@ def run_attack(
     result = run_episode(
         plan.task, build_topology(topology), llm, cfg.rounds, run_id,
         canary=canary, memory_seeds=plan.memory_seeds, defences=defences,
+        relay_whole_reply=relay_whole_reply,
     )  # fmt: skip
     return result, infected_agents(result.log.events, canary)
 

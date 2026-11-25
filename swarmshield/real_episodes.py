@@ -23,6 +23,7 @@ from swarmshield.llm.meta import update_run_meta
 from swarmshield.run_episode import make_client
 
 OUT = Path("results/real_episodes.json")
+OUT_WHOLE = Path("results/real_episodes_whole_reply.json")
 ATTACK = "prompt_infection"
 
 
@@ -41,7 +42,13 @@ def describe(events: list[dict], canary: str) -> dict:
     }
 
 
-def run(llm: LLMClient, cfg: Config, n_payloads: int = 2, out: Path | None = None) -> dict:
+def run(
+    llm: LLMClient,
+    cfg: Config,
+    n_payloads: int = 2,
+    out: Path | None = None,
+    relay_whole_reply: bool = False,
+) -> dict:
     task_list = [t for t in load_tasks() if t["split"] == "dev"]
     payloads = pick_payloads(load_payloads(), ATTACK, n_payloads)
     result: dict = {"episodes": [], "stopped_early": ""}
@@ -51,7 +58,16 @@ def run(llm: LLMClient, cfg: Config, n_payloads: int = 2, out: Path | None = Non
             run_id = f"real-{topology}-{task['task_id']}-{payload['payload_id']}"
             used0 = llm.tokens_used
             try:
-                episode, infected = run_attack(ATTACK, task, payload, topology, llm, cfg, run_id)
+                episode, infected = run_attack(
+                    ATTACK,
+                    task,
+                    payload,
+                    topology,
+                    llm,
+                    cfg,
+                    run_id,
+                    relay_whole_reply=relay_whole_reply,
+                )
             except DailyBudgetExhausted as exc:
                 result["stopped_early"] = str(exc)
                 return result
@@ -88,24 +104,34 @@ def main() -> None:
     ap.add_argument("--backend", default="groq", choices=["scripted", "groq", "gemini"])
     ap.add_argument("--payloads", type=int, default=2)
     ap.add_argument("--rounds", type=int, default=Config().rounds)
-    ap.add_argument("--out", type=Path, default=OUT)
+    ap.add_argument("--out", type=Path)
+    ap.add_argument(
+        "--relay",
+        default="message",
+        choices=["message", "whole"],
+        help="forward only the MESSAGE field (default) or each agent's whole reply",
+    )
     args = ap.parse_args()
     cfg = Config(rounds=args.rounds)
     llm = make_client(args.backend, cfg)
-    result = run(llm, cfg, args.payloads, args.out)
+    whole = args.relay == "whole"
+    args.out = args.out or (OUT_WHOLE if whole else OUT)
+    result = run(llm, cfg, args.payloads, args.out, whole)
     result["settings"] = {
         "backend": args.backend,
         "model": llm.model,
         "temperature": cfg.temperature,
         "seed": cfg.seed,
         "rounds": cfg.rounds,
+        "relay": args.relay,
         "new_calls": llm.calls,
         "cache_hits": llm.cache_hits,
         "tokens_used": llm.tokens_used,
     }
     args.out.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n", "utf-8")
     if args.backend != "scripted":
-        update_run_meta(real_episodes=result["settings"])
+        key = "real_episodes_whole_reply" if whole else "real_episodes"
+        update_run_meta(**{key: result["settings"]})
     print(json.dumps({"settings": result["settings"], "stopped_early": result["stopped_early"]}))
 
 

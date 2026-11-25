@@ -95,6 +95,7 @@ def run_episode(
     canary: str | None = None,
     memory_seeds: list[dict] | None = None,
     defences: DefenceSet | None = None,
+    relay_whole_reply: bool = False,
 ) -> EpisodeResult:
     memory = memory or SharedMemory()
     router = router or Router(graph)
@@ -141,8 +142,10 @@ def run_episode(
             if action.note:
                 entry = memory.write(action.note, agent_id, rnd, sources, trusted)
                 log.add(rnd, "memory_write", agent_id, text=action.note, blocked=entry is None)
-            if action.message:
-                sent, dropped = router.send(agent_id, action.message, rnd, sources, trusted)
+            # By default only the MESSAGE field travels; the alternative forwards everything.
+            outgoing = action.raw.strip() if relay_whole_reply else action.message
+            if outgoing:
+                sent, dropped = router.send(agent_id, outgoing, rnd, sources, trusted)
                 for m in sent:
                     log.add(rnd, "message", agent_id, to=m.recipient, text=m.text)
                 for m in dropped:
