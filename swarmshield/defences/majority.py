@@ -9,12 +9,14 @@ the drafters were fooled; it costs one extra LLM call per episode (a third, isol
 
 import re
 
+from swarmshield.scoring import plain_numbers
+
 _SENTENCE = re.compile(r"(?<=[.!?])\s+")
 _NUMBER = re.compile(r"(?<![\w-])\d[\d,.]*(?![\w-])")
 
 
 def _key(sentence: str):
-    numbers = frozenset(_NUMBER.findall(sentence))
+    numbers = frozenset(n.rstrip(".,") for n in _NUMBER.findall(plain_numbers(sentence)))
     if numbers:
         return ("n", numbers)
     return ("t", re.sub(r"\W+", " ", sentence.lower()).strip())

@@ -153,3 +153,9 @@ def test_real_backends_need_keys(monkeypatch):
         groq_backend("m", msgs, 0.0, 1, {})
     with pytest.raises(RuntimeError, match="SWARMSHIELD_GEMINI_API_KEY"):
         gemini_backend("m", msgs, 0.0, 1, {})
+
+
+def test_task_success_accepts_thousands_separators():
+    task = {"required_facts": ["1419", "65697", "274"]}
+    assert task_success("1,419 mm, 65 697 residents, 274 m", task)
+    assert not task_success("1,41 mm, 65697, 274", task)

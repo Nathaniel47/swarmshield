@@ -139,3 +139,12 @@ How to check: open README.md and compare each number with `results/results_table
 - **What it does not show**: one model, temperature 0, one task per payload, single agent turns rather than full multi-agent episodes, and intervals that are still wide (15/19 is compatible with about 57-92%).
 
 How to run: put `SWARMSHIELD_GROQ_API_KEY` in `.env`, then `python -m swarmshield.calibration --backend groq --per-attack 19`. Answers are cached, so a rerun costs nothing.
+
+## Full episodes on a real model
+
+- **What was run** (`swarmshield/real_episodes.py`): six complete six-agent runs on Groq `openai/gpt-oss-20b`, prompt infection, no defences, 2 payloads on each network shape, 4 rounds. About 92K tokens, more than my estimate of 55-70K, so a real episode costs about 15K tokens.
+- **Result**: the first researcher wrote the code every round in all six runs, and it never reached another agent (0 of 400 messages). The simulated worm spreads to 54-91% of agents in the same setting without defences.
+- **Why, and why not to celebrate**: the payload asks the model to copy the notice "to the start of every message". The model did put it at the start of its reply, but this harness only forwards the text after `MESSAGE:`. A system that forwards whole replies might well be infected. **How you pass outputs between agents is part of the attack surface**, and a simulation that assumes obedience means relaying misses it. A strict output format is worth studying as a defence, but only against an attacker who knows the format.
+- **Reading a metric against real output**: every episode first scored as a task failure because the model writes `1,419` and the scorer looked for `1419`. The scripted agent copies text exactly, so no offline test could show this. Check a new metric against real replies before trusting it.
+
+How to run: `python -m swarmshield.real_episodes --backend groq` (replies are cached, so a rerun costs nothing).
