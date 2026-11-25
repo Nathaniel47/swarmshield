@@ -5,15 +5,15 @@
   "seed": 42,
   "rounds": 4,
   "topology": "chain",
-  "git_commit": "36c22de9f44c8ec0c973cb3af8f1a2203ef0729b",
+  "git_commit": "28ae1605d1ddb8b1cd13a86b9109cbffddcb2053",
   "calibration": {
     "backend": "groq",
     "model": "openai/gpt-oss-20b",
     "temperature": 0.0,
     "seed": 42,
-    "per_attack": 5,
-    "new_calls": 20,
-    "cache_hits": 0,
-    "tokens_used": 9883
+    "per_attack": 19,
+    "new_calls": 56,
+    "cache_hits": 20,
+    "tokens_used": 26717
   }
 }
