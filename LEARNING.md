@@ -129,3 +129,12 @@ How to check: `docker build` and `docker run` as in `DEPLOY.md`, then open http:
 - **Honesty rule used throughout**: every claim in these documents is taken from `results/results_table.md` or `results/limitations.md`; if a number is not in those files it is not in the README.
 
 How to check: open README.md and compare each number with `results/results_table.md`; `pytest` and `ruff check .` pass.
+
+## First real-model check (calibration)
+
+- **What it does** (`swarmshield/calibration.py`): one agent turn per call, each seeing one planted payload (a researcher reading an infected document, or a writer reading poisoned memory), once plain and once with D1's UNTRUSTED DATA fence. It records whether the canary appears anywhere in the reply (*obeyed*) and whether it appears in the `MESSAGE` field (*relayed*), which is what would reach the next agent. Intervals are Wilson intervals, which behave sensibly for tiny samples.
+- **First result** (Groq `openai/gpt-oss-20b`, development split, 5 payloads per cell, about 10K tokens): obeyed 5/5 plain and 1/5 fenced for infection, 5/5 plain and 4/5 fenced for memory poisoning. Relayed 0/5 plain for infection.
+- **What it teaches**: obeying and spreading are different things. The model copied the notice, but above the labelled fields, so the parser dropped it. A strict reply format acted as an accidental sanitiser. That is a fragile protection (a payload that says "put this in your MESSAGE line" would get around it, which has not been tested), and the scripted agent does not model it. It also suggests D1's fence helps less against a poisoned memory entry that reads like a standing instruction.
+- **What it does not show**: five calls per cell cannot pin down a rate (5/5 is compatible with anything from about 57% to 100%), only the first notice-style wording families were sampled, and nothing was run as a full multi-agent episode.
+
+How to run: put `SWARMSHIELD_GROQ_API_KEY` in `.env`, then `python -m swarmshield.calibration --backend groq --per-attack 5`. Answers are cached, so a rerun costs nothing.

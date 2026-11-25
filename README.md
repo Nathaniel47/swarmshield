@@ -6,7 +6,7 @@ A simulation testbed that measures how a malicious instruction, or a poisoned me
 
 <!-- GIF placeholder: docs/demo.gif, a recording of the "Worm on a mesh, no defence" example followed by "all defences". -->
 
-> **Read this first:** every number below comes from a rule-based *scripted* agent that obeys planted text with a probability we set (0.5 or 1.0). It models an LLM; it is not one. The Groq and Gemini backends are written and tested for failure modes, but no real-model run was done. See [Limitations](#limitations).
+> **Read this first:** every number below comes from a rule-based *scripted* agent that obeys planted text with a probability we set (0.5 or 1.0). It models an LLM; it is not one. The only real-model data is a 20-call check on Groq `openai/gpt-oss-20b` ([results/calibration.json](results/calibration.json)), which already disagrees with parts of the model: see [Limitations](#limitations).
 
 ## What it does
 
@@ -136,7 +136,7 @@ All attacks target this simulated system only. Documents, tasks and "personal da
 
 Full list: [results/limitations.md](results/limitations.md). The main ones:
 
-- No real language model was run. The scripted agent's obedience rates (0.5, 1.0) and D1's fence effect (0.2) are assumptions, not measurements.
+- The tables come from the scripted agent; its obedience rates (0.5, 1.0) and D1's fence effect (0.2) were assumed. A first real-model check (5 payloads per cell, so very wide intervals) found the planted code emitted in 10 of 10 unfenced calls. With D1's fence it was 1 of 5 for the infected document and 4 of 5 for poisoned memory, so the fence may be much weaker against memory poisoning than assumed. In 0 of 5 infection replies did the code reach the `MESSAGE` field, because the model put the copied notice before it, where the reply parser discards it. The scripted worm spreads more readily than this model's did in that check.
 - D2 allow-lists numeric sentences, which suits this numeric task and would not carry over to general text.
 - The forged poison is not fully solved (2 to 9% success with all defences), and a stronger attacker was not tried.
 - Six agents, three network shapes and a single patient-zero placement; the SIR fit is a coarse grid search.
@@ -144,7 +144,7 @@ Full list: [results/limitations.md](results/limitations.md). The main ones:
 
 ## Future work
 
-1. Add a Groq/Gemini key, measure real obedience on the 126 payloads (about 60K tokens), and replace the assumed rates; then confirm the defence comparison on a small real-model run.
+1. Extend the real-model check to all development payloads (the first 20 calls used about 10K tokens), re-run the grid with the measured rates, and test real multi-agent episodes, including whether the worm spreads at all given how the model formats its reply.
 2. Larger swarms and more topologies (ring, small-world, hubs with different trust), and different patient-zero positions.
 3. A stronger poisoning attacker (poison written by a compromised agent, or crafted to evade retrieval triggers) and a learned classifier as the baseline.
 4. A live-model mode in the public demo, behind rate limits and a daily cap.
