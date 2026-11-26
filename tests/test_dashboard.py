@@ -69,3 +69,16 @@ def test_app_runs_without_errors_and_presets_change_the_setup():
     allm.click().run()
     assert at.session_state["defences"] == ["d1_provenance", "d2_sanitiser", "d3_majority"]
     assert not at.exception
+
+
+def test_results_tab_warns_that_real_model_checks_disagree():
+    at = AppTest.from_file(str(APP), default_timeout=60).run()
+    assert any("real model" in w.value for w in at.warning)
+
+
+def test_demo_gif_panels_match_what_the_gif_claims():
+    from dashboard.make_gif import panel_runs
+
+    (_, undefended), (_, defended) = panel_runs()
+    assert not undefended["success"] and len(undefended["infected"]) == 6
+    assert defended["success"] and not defended["infected"]

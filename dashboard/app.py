@@ -152,6 +152,14 @@ with tab_compare:
     st.caption("One run per row. The Results tab has averages over many runs.")
 
 with tab_results:
+    st.warning(
+        "These tables and charts come from the simulated agent. Small checks on a real model "
+        "(Groq openai/gpt-oss-20b) disagree in places. D1's untrusted-data label did nothing "
+        "against poisoned memory (obeyed in 18 of 19 calls with or without it), so do not expect "
+        "the forged-poison results for D1 or for all three defences to hold. In six-agent runs "
+        "the worm never spread when only the MESSAGE field was forwarded, and got past the first "
+        "agent in 4 of 6 when whole replies were."
+    )
     st.write(
         "Held-out test results for the scripted agent (the model is a rule-based stand-in with a "
         "set obedience rate, so read the limitations below before quoting a number)."

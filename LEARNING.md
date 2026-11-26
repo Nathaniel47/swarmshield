@@ -157,3 +157,16 @@ How to run: `python -m swarmshield.real_episodes --backend groq` (replies are ca
 - **Limits**: one payload, one model, temperature 0, and the 25 turns are not independent.
 
 To finish: after the daily limit resets, run `python -m swarmshield.real_episodes --backend groq --relay whole` again. Saved replies are reused, so only the missing calls cost tokens.
+
+## Forwarding whole replies (complete), and a correction
+
+- **Result for all six episodes**: the worm got past the first agent in 4 of 6. Payload 1 reached 2, 1 and 1 agents on chain, star and mesh; payload 2 reached 2, 2 and 5. Exposed turns by other agents repeated the code 16 times in 55 (2/25 and 14/30). No parsed report contained it.
+- **Correction**: the section above, written after 3 episodes, said the worm mostly did not spread and that this model rarely obeyed a notice passed on by another agent. Those 3 episodes all used one payload. The second payload spread much more. **Do not generalise from one example, however many runs it is repeated over**: the runs shared the thing that mattered most.
+- **What now holds**: the forwarding rule decides whether the worm can travel at all (0 of 6 with message-only, 4 of 6 with whole replies), and the payload strongly affects how far.
+- **A resumable runner paid off**: a network timeout killed the sixth episode; because replies are cached, the rerun made only the 10 missing calls, and the first three episodes reproduced exactly.
+
+## Demo check and GIF
+
+- The live app was checked: the four examples and the Results tab work. After an idle spell the free host puts it to sleep, and a visitor must click a wake-up button and wait about a minute, so "loads in under 10 seconds" is only true while it is awake.
+- The Results tab now opens with a warning that the real-model checks disagree with parts of the simulation.
+- `docs/demo.gif` is drawn by `dashboard/make_gif.py` from real simulator runs rather than screen-recorded, so it can be regenerated, and it says in the picture that the agent is scripted.
